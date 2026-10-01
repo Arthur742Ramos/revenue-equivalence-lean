@@ -22,6 +22,10 @@ def IIR (X P : ℝ → ℝ) : Prop := ∀ t, 0 ≤ interimUtility X P t
 noncomputable def expectedPayment (P : ℝ → ℝ) (μ : MeasureTheory.Measure ℝ) : ℝ :=
   ∫ t, P t ∂μ
 
+/-- Ex ante expected payment unfolds to the Bochner integral of the payment rule. -/
+lemma expectedPayment_apply (P : ℝ → ℝ) (μ : MeasureTheory.Measure ℝ) :
+    expectedPayment P μ = ∫ t, P t ∂μ := (rfl)
+
 /-- Interim utility is the type-weighted allocation minus the payment. -/
 lemma interimUtility_apply (X P : ℝ → ℝ) (t : ℝ) :
     interimUtility X P t = t * X t - P t := by
