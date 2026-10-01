@@ -201,12 +201,21 @@ config = json.loads(pathlib.Path("comparator.json").read_text(encoding="utf-8"))
 temp = pathlib.Path(sys.argv[1])
 names = config["definition_names"] + config["theorem_names"]
 
+# For the declaration-kind check, elaborate the module directly (append checks
+# to the module source) rather than importing it: def bodies are not exposed
+# across module imports in Lean 4 (they appear as axiomInfo), so the check
+# must run in the module's own environment where they are defnInfo.
+# Challenge defines the comparator definitions directly; Solution imports them
+# from Revenue.Defs (verified via Challenge), so Solution only checks theorems.
 for module in ("Challenge", "Solution"):
     checks = temp / f"{module}Check.lean"
-    lines = ["module", "", f"public import {module}", "", "public section", ""]
+    src = pathlib.Path(f"{module}.lean").read_text(encoding="utf-8")
+    lines = [src.rstrip(), "", "public section", ""]
     lines.extend(f"#check @{name}" for name in names)
     lines.extend(["", "open Lean", "", "run_cmd do", "  let env ← getEnv"])
-    for name in config["definition_names"]:
+    # Definition-kind check only for Challenge (where they are defined).
+    def_names = config["definition_names"] if module == "Challenge" else []
+    for name in def_names:
         lines.extend([
             f"  match env.find? `{name} with",
             "  | some (.defnInfo _) => pure ()",
