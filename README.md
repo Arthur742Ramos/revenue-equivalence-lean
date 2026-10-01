@@ -3,10 +3,13 @@
 A Lean 4 + Mathlib formalization of Myerson's revenue equivalence theorem:
 in a single-parameter setting with continuous real types and quasi-linear
 utility, any two Bayesian incentive-compatible mechanisms that implement the
-same interim allocation rule, and give the same interim utility to the lowest
-type, charge the same interim payments at every nonnegative type — hence they
-raise the same ex ante expected revenue under any prior supported on
-nonnegative types.
+same interim allocation rule, and give the same interim utility at the
+reference type (type zero), charge the same interim payments at every
+nonnegative type; when both interim payment rules are integrable,
+they raise the same ex ante expected revenue under any prior supported on
+nonnegative types. Note there is no lowest type in the model: types range
+over all of `ℝ`, and zero is only the normalization point for the payment
+identity.
 
 ## Headline result
 
@@ -25,8 +28,11 @@ The three comparator theorems, in `RevenueEquivalence.Palomar`:
 1. **Envelope formula** (`envelope_integral`):
    `(X P : ℝ → ℝ) (hBIC : BIC X P) (t : ℝ) (ht : 0 ≤ t)` gives
    `interimUtility X P t - interimUtility X P 0 = ∫ x in (0:ℝ)..t, X x`.
-   Under BIC, the change in interim utility from type zero is pinned down by
-   the interval integral of the allocation rule. The proof is a
+   Under BIC, the change in interim utility from the reference type (type zero)
+   is pinned down by the interval integral of the allocation rule. The
+   integral is a genuine finite integral, not a totalized value: BIC implies
+   the allocation rule is monotone (`X_monotone_of_BIC` in `Revenue/BIC.lean`),
+   hence interval-integrable on every interval. The proof is a
    Riemann-sum-free squeeze: the BIC sandwich bounds both utility increments
    and integral pieces over a uniform `n`-partition of `[0, t]`; both
    telescoping sums share the same endpoint Riemann sums, whose gap is
@@ -37,18 +43,25 @@ The three comparator theorems, in `RevenueEquivalence.Palomar`:
    `(hU : interimUtility X P1 0 = interimUtility X P2 0)`
    `(t : ℝ) (ht : 0 ≤ t)` gives `P1 t = P2 t`.
    Two BIC mechanisms with the same interim allocation rule and the same
-   interim utility at type zero charge identical interim payments at every
-   nonnegative type. Note the hypothesis is *equal* utility at type zero
-   (`hU`), not zero utility; and interim individual rationality (`IIR`) is
-   defined in the library but is *not* assumed by any of the three theorems.
+   interim utility at the reference type (type zero) charge identical
+   interim payments at every nonnegative type. Note the hypothesis is
+   *equal* utility at the reference type (`hU`), not zero utility; and
+   interim individual rationality (`IIR`) is defined in the library but is
+   *not* assumed by any of the three theorems.
 
 3. **Expected revenue equality** (`expectedRevenueEqual`):
-   `(X P1 P2 : ℝ → ℝ) (μ : Measure ℝ)` with the same BIC and type-zero
-   hypotheses plus `(hsupp : ∀ᵐ t ∂μ, 0 ≤ t)` gives
+   `(X P1 P2 : ℝ → ℝ) (μ : Measure ℝ)` with the same BIC and reference-type
+   hypotheses plus `(hsupp : ∀ᵐ t ∂μ, 0 ≤ t)` and
+   `(hInt1 : Integrable P1 μ) (hInt2 : Integrable P2 μ)` gives
    `expectedPayment P1 μ = expectedPayment P2 μ`,
    where `expectedPayment P μ = ∫ t, P t ∂μ` is the Bochner integral of the
    payment rule. The prior must be supported on nonnegative types almost
-   everywhere.
+   everywhere, and both payment rules must be integrable with respect to
+   the prior: Lean's Bochner integral is totalized, so without integrability
+   the equality would also hold vacuously for nonintegrable payment rules
+   (e.g. `X t = t`, `P t = t^2 / 2` satisfy BIC, but a `1/n^2`-weighted
+   prior on the nonnegative integers gives infinite payment expectation).
+   The integrability hypotheses make both sides genuine finite expectations.
 
 All three theorems use only the axioms `propext`, `Classical.choice`, and
 `Quot.sound`. The library (`Revenue/`) and `Solution.lean` contain zero
@@ -57,20 +70,20 @@ theorem statements, per the Palomar statement-surface format.
 
 ## Repository layout
 
-- `Revenue/` — the Lean 4 proof library: `Defs.lean` (definitions and API
+- `Revenue/`: the Lean 4 proof library: `Defs.lean` (definitions and API
   lemmas), `BIC.lean` (monotonicity and the sandwich inequality),
   `Envelope.lean` (the envelope integral formula), `Equivalence.lean` (the
   main theorem and its expected-revenue corollary), `Main.lean` (entry point).
-- `Challenge.lean`, `Solution.lean`, `comparator.json` — Palomar registry
+- `Challenge.lean`, `Solution.lean`, `comparator.json`: Palomar registry
   packaging. Challenge restates the four definitions with real bodies and the
   three theorems with sorry placeholders, importing only Mathlib. Solution
   proves the three `RevenueEquivalence.Palomar` theorems by applying the
   library. The two modules are compiled separately because their fully
   qualified statement names coincide.
-- `formalization.yaml` — registry metadata. `M6_AUDIT.md` — the
+- `formalization.yaml`: registry metadata. `M6_AUDIT.md`: the
   prose-to-hypothesis audit gating every factual claim below against the Lean
   artifact.
-- `scripts/verify-palomar.sh` — local replica of the Palomar verification
+- `scripts/verify-palomar.sh`: local replica of the Palomar verification
   checks (module headers, builds, declaration kinds in both environments,
   axiom audits, the official `lake comparator` stage, whitespace).
 
@@ -79,8 +92,8 @@ theorem statements, per the Palomar statement-surface format.
 A Palomar registry API search on 2026-10-01 (via
 `https://data.palomar-registry.org/api/v1/results`) returned zero entries for
 `revenue equivalence`. The query `Myerson` returned one entry,
-PALOMAR-2026-09-26-000002, the Myerson–Satterthwaite impossibility theorem —
-a different theorem (inefficient bilateral trade is impossible), not revenue
+PALOMAR-2026-09-26-000002, the Myerson–Satterthwaite impossibility theorem
+(a different theorem: inefficient bilateral trade is impossible), not revenue
 equivalence. The query `auction` returned one entry,
 PALOMAR-2026-10-01-000007 (Bulow–Klemperer), also a different theorem. These
 are dated, limited observations, not universal prior-art claims.

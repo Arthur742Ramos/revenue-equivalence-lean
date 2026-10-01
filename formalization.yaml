@@ -11,10 +11,16 @@ project:
     (hU : interimUtility X P1 0 = interimUtility X P2 0) (t : ℝ)
     (ht : 0 ≤ t) : P1 t = P2 t: two Bayesian incentive-compatible mechanisms
     with the same interim allocation rule and the same interim utility at
-    type zero charge the same interim payments at every nonnegative type.
+    the reference type (type zero) charge the same interim payments at every
+    nonnegative type. Types range over all of ℝ; there is no lowest type,
+    and zero is only the normalization point for the payment identity.
     The envelope lemma RevenueEquivalence.Palomar.envelope_integral and the
     expected-revenue corollary RevenueEquivalence.Palomar.expectedRevenueEqual
-    are proved alongside. The Palomar registry API search on 2026-10-01 for
+    are proved alongside; the corollary requires both interim payment rules
+    to be integrable with respect to the prior
+    ((hInt1 : Integrable P1 μ) (hInt2 : Integrable P2 μ)), so its conclusion
+    is an equality of finite expected revenues rather than a vacuous
+    totalized-integral identity. The Palomar registry API search on 2026-10-01 for
     "revenue equivalence" returned zero entries; the queries "Myerson" and
     "auction" returned only different theorems (see related_formalizations
     note). These are dated, limited observations, not universal prior-art
@@ -33,8 +39,8 @@ sources:
     note: >-
       Covers the revenue equivalence theorem: in the single-parameter
       quasi-linear model, two Bayesian incentive-compatible mechanisms with
-      the same allocation rule and the same lowest-type utility yield the
-      same payments. The formalization proves
+      the same allocation rule and the same reference-type (type-zero) utility
+      yield the same payments. The formalization proves
       RevenueEquivalence.Palomar.revenueEquivalence
       (X P1 P2 : ℝ → ℝ) (h1 : BIC X P1) (h2 : BIC X P2)
       (hU : interimUtility X P1 0 = interimUtility X P2 0) (t : ℝ)
@@ -63,12 +69,16 @@ status:
     RevenueEquivalence.Palomar.expectedRevenueEqual (X P1 P2 : ℝ → ℝ)
     (μ : Measure ℝ) (h1 : BIC X P1) (h2 : BIC X P2)
     (hU : interimUtility X P1 0 = interimUtility X P2 0)
-    (hsupp : ∀ᵐ t ∂μ, 0 ≤ t) : expectedPayment P1 μ = expectedPayment P2 μ.
+    (hsupp : ∀ᵐ t ∂μ, 0 ≤ t)
+    (hInt1 : Integrable P1 μ) (hInt2 : Integrable P2 μ) :
+    expectedPayment P1 μ = expectedPayment P2 μ.
     The zero sorry counts refer to the library (Revenue/) and Solution.lean;
     Challenge.lean carries 3 deliberate sorries (the theorem placeholders)
     per the Palomar statement-surface format; its four definitions carry
     real bodies. Types are ℝ (continuous); there is no finiteness,
-    independence, symmetry, or density assumption. IIR is defined but is not
+    independence, symmetry, or density assumption, and there is no lowest
+    type: zero is the reference/normalization point for the payment
+    identity. IIR is defined but is not
     a hypothesis of any comparator theorem. The Palomar registry API search
     on 2026-10-01 for "revenue equivalence" returned zero entries; "Myerson"
     returned PALOMAR-2026-09-26-000002 (Myerson–Satterthwaite, a different
@@ -108,11 +118,15 @@ status:
       description: >-
         (X P1 P2 : ℝ → ℝ) (μ : Measure ℝ) (h1 : BIC X P1) (h2 : BIC X P2)
         (hU : interimUtility X P1 0 = interimUtility X P2 0)
-        (hsupp : ∀ᵐ t ∂μ, 0 ≤ t) :
+        (hsupp : ∀ᵐ t ∂μ, 0 ≤ t)
+        (hInt1 : Integrable P1 μ) (hInt2 : Integrable P2 μ) :
         expectedPayment P1 μ = expectedPayment P2 μ.
-        Equal ex ante expected payments under any prior supported on
-        nonnegative types almost everywhere, via pointwise payment
-        equality and integral congruence.
+        Equal finite ex ante expected payments under any prior supported on
+        nonnegative types almost everywhere, for integrable payment rules,
+        via pointwise payment equality and integral congruence. The
+        integrability hypotheses are essential: Lean's Bochner integral is
+        totalized, so without them the equality would also hold vacuously
+        for nonintegrable payment rules.
       sorry_count: 0
       axioms: ["propext", "Classical.choice", "Quot.sound"]
       comparator_config: "comparator.json"
@@ -151,10 +165,13 @@ fidelity:
     dominant-strategy requirement. The envelope lemma needs 0 ≤ t; the
     revenue equivalence theorem concludes pointwise payment equality
     P1 t = P2 t on nonnegative types from equal (not necessarily zero)
-    type-zero utility. The expected-revenue corollary needs the prior
+    reference-type (type-zero) utility. The expected-revenue corollary needs the prior
     supported on nonnegative types almost everywhere
-    (∀ᵐ t ∂μ, 0 ≤ t) and uses the Bochner integral
-    expectedPayment P μ = ∫ t, P t ∂μ. IIR
+    (∀ᵐ t ∂μ, 0 ≤ t) and both payment rules integrable with respect to the
+    prior ((hInt1 : Integrable P1 μ) (hInt2 : Integrable P2 μ)), so its
+    conclusion is an equality of finite expectations; it uses the Bochner
+    integral
+    expectedPayment P μ = ∫ t, P t ∂μ, which is totalized. IIR
     (∀ t, 0 ≤ interimUtility X P t) is defined but is not a hypothesis of
     any comparator theorem. The envelope proof is a Riemann-sum-free
     squeeze (uniform n-partition, telescoping sums, vanishing gap), not
@@ -203,11 +220,15 @@ alignment:
       note: >-
         (X P1 P2 : ℝ → ℝ) (μ : Measure ℝ) (h1 : BIC X P1) (h2 : BIC X P2)
         (hU : interimUtility X P1 0 = interimUtility X P2 0)
-        (hsupp : ∀ᵐ t ∂μ, 0 ≤ t) :
+        (hsupp : ∀ᵐ t ∂μ, 0 ≤ t)
+        (hInt1 : Integrable P1 μ) (hInt2 : Integrable P2 μ) :
         expectedPayment P1 μ = expectedPayment P2 μ.
         Applies RevenueEquivalence.expectedRevenueEqual from
-        Revenue/Equivalence.lean (filter_upwards plus
-        MeasureTheory.integral_congr_ae).
+        Revenue/Equivalence.lean (filter_upwards gives a.e. payment equality;
+        the difference of the payment rules vanishes a.e., and
+        MeasureTheory.integral_sub splits its integral using the
+        integrability hypotheses, with MeasureTheory.integral_eq_zero_of_ae
+        identifying the difference integral as zero).
 
 review:
   status: "self-assessed"
