@@ -1,0 +1,20 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "definition_names": [
+    "RevenueEquivalence.interimUtility",
+    "RevenueEquivalence.BIC",
+    "RevenueEquivalence.IIR",
+    "RevenueEquivalence.expectedPayment"
+  ],
+  "theorem_names": [
+    "RevenueEquivalence.Palomar.envelope_integral",
+    "RevenueEquivalence.Palomar.revenueEquivalence",
+    "RevenueEquivalence.Palomar.expectedRevenueEqual"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ]
+}

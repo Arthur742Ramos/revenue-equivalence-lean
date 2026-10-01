@@ -1,6 +1,6 @@
 name = "revenue-equivalence"
 version = "0.1.0"
-defaultTargets = ["Revenue.Main"]
+defaultTargets = ["Revenue.Main", "Challenge", "Solution"]
 
 [[require]]
 name = "mathlib"
@@ -9,3 +9,10 @@ rev = "v4.35.0-rc2"
 
 [[lean_lib]]
 name = "Revenue"
+
+[[lean_lib]]
+name = "Challenge"
+moreLeanArgs = ["-Dwarn.sorry=false"]
+
+[[lean_lib]]
+name = "Solution"
